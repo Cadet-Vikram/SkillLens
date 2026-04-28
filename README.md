@@ -1,50 +1,184 @@
-# Welcome to your Expo app 👋
+# SkillLens
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+SkillLens is a multilingual AI career coach built with Expo and React Native. The app helps a learner describe a goal in natural language, detects skill gaps, generates a 4-week learning path, tracks progress, and lets the user chat with an AI coach in their chosen language.
 
-## Get started
+## What it does
 
-1. Install dependencies
+- AI skill-gap analysis from a user’s goal
+- Multilingual coaching and UI translation
+- Personalized 4-week learning path with quizzes
+- Progress tracking, streaks, and readiness scores
+- AI coach chat
+- Profile language switching that regenerates app content
+- Firebase auth and Firestore-backed persistence
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- Expo SDK 54
+- React Native
+- React Navigation
+- Firebase Authentication
+- Firestore
+- Groq API for AI generation
+- Google Cloud Translation API for translated content
+- AsyncStorage for persisted language preference
 
-   ```bash
-   npx expo start
-   ```
+## App Flow
 
-In the output, you'll find options to open the app in a
+1. Splash screen
+2. Welcome screen
+3. Signup or login
+4. Onboarding
+5. Skill analysis
+6. Learning path generation
+7. Main tabs:
+   - Home
+   - Skill Report
+   - Learning Path
+   - Coach
+   - Progress
+   - Profile
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+App.js
+src/
+  constants/
+    config.js
+    theme.ts
+  hooks/
+    useAuth.js
+    useLocalizedCopy.js
+    usePreferredLanguage.js
+  navigation/
+    AppNavigator.js
+  screens/
+    WelcomeScreen.js
+    LoginScreen.js
+    SignupScreen.js
+    SplashScreen.js
+    OnboardingScreen.js
+    HomeScreen.js
+    SkillReportScreen.js
+    LearningPathScreen.js
+    CoachScreen.js
+    ProgressScreen.js
+    ProfileScreen.js
+  services/
+    firebase.js
+    groqService.js
+    uiTranslationService.js
+    userService.js
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Setup
 
-## Learn more
+### 1. Install dependencies
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 2. Add environment variables
 
-## Join the community
+Create a `.env` file in the project root:
 
-Join our community of developers creating universal apps.
+```bash
+EXPO_PUBLIC_GROQ_API_KEY=your_groq_api_key
+EXPO_PUBLIC_GOOGLE_TRANSLATE_KEY=your_google_translate_api_key
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The app reads these from `src/constants/config.js`.
+
+### 3. Start the app
+
+```bash
+npx expo start
+```
+
+You can open it with:
+
+- Expo Go on a device
+- Android emulator
+- iOS simulator
+
+## Available Scripts
+
+- `npm run start` - start Expo
+- `npm run android` - start Expo and open Android
+- `npm run ios` - start Expo and open iOS
+- `npm run web` - start Expo web
+- `npm run lint` - run lint checks
+
+## How Language Switching Works
+
+When the user changes language from Profile:
+
+- the selected language is saved to the user profile
+- skill-report data is regenerated in that language
+- the learning path is regenerated in that language
+- the AI coach replies in that language
+- the UI copy is translated through a shared translation helper
+
+## Build an Android APK
+
+For a standalone APK, use EAS Build.
+
+### 1. Install EAS CLI
+
+```bash
+npm install -g eas-cli
+```
+
+### 2. Configure EAS
+
+```bash
+eas build:configure
+```
+
+### 3. Add an APK build profile
+
+In `eas.json`, use a preview profile that produces an APK:
+
+```json
+{
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {}
+  }
+}
+```
+
+### 4. Build the APK
+
+```bash
+eas build -p android --profile preview
+```
+
+Expo’s current docs recommend APKs for preview builds and AABs for Google Play submissions.
+
+## Build a Play Store Release
+
+For a real store submission, build an Android App Bundle instead:
+
+```bash
+eas build -p android --profile production
+```
+
+Then submit the AAB to Google Play.
+
+## Notes
+
+- The app entry point is `App.js`, not Expo Router.
+- Firebase, Groq, and translation keys should stay in env vars, not hardcoded in source.
+- The app currently targets Android-first usage, but it also supports iOS and web through Expo.
+
+## License
+
+No license file is included yet.
