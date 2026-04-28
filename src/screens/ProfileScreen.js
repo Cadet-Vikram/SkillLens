@@ -41,6 +41,8 @@ export default function ProfileScreen({ navigation }) {
     cancel: "Cancel",
     doneTitle: "Done!",
     doneBodyTemplate: "App language changed to {lang}.",
+    doneNote: "App language has been updated.",
+    doneRefreshNote: "If some AI-generated content is still in the old language, it will continue to work and can be refreshed later.",
     errorTitle: "Error",
     errorBody: "Language change failed. Please try again.",
     signOutTitle: "Sign Out",
@@ -68,7 +70,7 @@ export default function ProfileScreen({ navigation }) {
       await refreshProfile();
       Alert.alert(
         copy.doneTitle,
-        `${copy.doneBodyTemplate.replace("{lang}", newLang)}\n\nThe app language has been updated. If some AI-generated content is still in the old language, it will continue to work and can be refreshed later.`,
+        `${copy.doneBodyTemplate.replace("{lang}", newLang)}\n\n${copy.doneNote} ${copy.doneRefreshNote}`,
       );
     } catch (e) {
       console.error(e);
