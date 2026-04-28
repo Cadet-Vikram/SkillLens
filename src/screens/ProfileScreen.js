@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, SafeAreaView, StatusBar,
   TouchableOpacity, Alert, Share, Modal, ActivityIndicator,
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
-import { updateUserProfile, saveSkillGapReport, saveLearningPath, getSkillGapReport } from "../services/userService";
-import { analyzeSkillGaps, generateLearningPath } from "../services/groqService";
-import { COLORS, LANGUAGES, GOOGLE_TRANSLATE_KEY } from "../constants/config";
+import { updateUserProfile } from "../services/userService";
+import { COLORS, LANGUAGES } from "../constants/config";
 import { useLocalizedCopy } from "../hooks/useLocalizedCopy";
 import { usePreferredLanguage } from "../hooks/usePreferredLanguage";
 
@@ -17,15 +16,15 @@ export default function ProfileScreen({ navigation }) {
   const [changingLang, setChangingLang] = useState(false);
 
   const copy = useLocalizedCopy(preferredLanguage, {
-    updating: "Updating language & regenerating content...",
-    updatingNote: "This takes about 20 seconds ☕",
+    updating: "Updating language...",
+    updatingNote: "This takes a few seconds ☕",
     jobStarted: "Getting started",
     streak: "Streak",
     daysDone: "Days Done",
     readiness: "Readiness",
     settings: "Settings",
     language: "Language",
-    languageHint: "Tap to change - updates all content",
+    languageHint: "Tap to change - updates the app language",
     email: "Email",
     goal: "Goal",
     notSet: "Not set",
@@ -38,12 +37,10 @@ export default function ProfileScreen({ navigation }) {
     signOutSub: "See you soon!",
     footer: "SkillLens v1.0 - Built with ❤️ for India",
     chooseLanguage: "Choose Language",
-    modalSub: "All your content - skill report, learning path, coach - will be regenerated in your chosen language.",
+    modalSub: "All app text will switch to your chosen language.",
     cancel: "Cancel",
-    updatingLanguageTitle: "Updating Language",
-    updatingLanguageBodyTemplate: "Regenerating all your content in {lang}. This takes about 20 seconds...",
     doneTitle: "Done!",
-    doneBodyTemplate: "App language changed to {lang}. All your content has been updated!",
+    doneBodyTemplate: "App language changed to {lang}.",
     errorTitle: "Error",
     errorBody: "Language change failed. Please try again.",
     signOutTitle: "Sign Out",
@@ -53,40 +50,26 @@ export default function ProfileScreen({ navigation }) {
     reanalyzeTitle: "Re-analyze Skills",
     reanalyzeBody: "This will re-run the AI analysis on your current goal. Continue?",
     continue: "Continue",
-    reportLoading: "Updating language and regenerating content...",
+    updatingLanguageTitle: "Updating Language",
+    updatingLanguageBodyTemplate: "Changing the app language to {lang}.",
   });
-
-  useEffect(() => {
-  }, [preferredLanguage]);
 
   const handleLanguageChange = async (newLang) => {
     if (newLang === profile?.language) {
       setShowLangModal(false);
       return;
     }
+
     setShowLangModal(false);
     setChangingLang(true);
 
     try {
       await updateUserProfile(user.uid, { language: newLang });
-
-      const currentReport = await getSkillGapReport(user.uid);
-      const goal = profile?.goal || currentReport?.goal || "career development";
-
-      Alert.alert(
-        copy.updatingLanguageTitle,
-        copy.updatingLanguageBodyTemplate.replace("{lang}", newLang),
-        [{ text: "OK" }]
-      );
-
-      const newReport = await analyzeSkillGaps(goal, profile?.name, newLang, GOOGLE_TRANSLATE_KEY);
-      await saveSkillGapReport(user.uid, { ...newReport, goal, language: newLang });
-
-      const newPath = await generateLearningPath(newReport.jobRole, newReport.skills, profile?.name, newLang, GOOGLE_TRANSLATE_KEY);
-      await saveLearningPath(user.uid, newPath);
-
       await refreshProfile();
-      Alert.alert(copy.doneTitle, copy.doneBodyTemplate.replace("{lang}", newLang));
+      Alert.alert(
+        copy.doneTitle,
+        `${copy.doneBodyTemplate.replace("{lang}", newLang)}\n\nThe app language has been updated. If some AI-generated content is still in the old language, it will continue to work and can be refreshed later.`,
+      );
     } catch (e) {
       console.error(e);
       Alert.alert(copy.errorTitle, `${copy.errorBody}\n${e.message}`);
@@ -132,9 +115,7 @@ export default function ProfileScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {profile?.name?.charAt(0)?.toUpperCase() || "?"}
-            </Text>
+            <Text style={styles.avatarText}>{profile?.name?.charAt(0)?.toUpperCase() || "?"}</Text>
           </View>
           <Text style={styles.name}>{profile?.name}</Text>
           <Text style={styles.email}>{user?.email}</Text>
@@ -206,14 +187,10 @@ export default function ProfileScreen({ navigation }) {
           <TouchableOpacity
             style={styles.actionBtn}
             onPress={() =>
-              Alert.alert(
-                copy.reanalyzeTitle,
-                copy.reanalyzeBody,
-                [
-                  { text: copy.signOutCancel, style: "cancel" },
-                  { text: copy.continue, onPress: () => navigation.navigate("Onboarding") },
-                ]
-              )
+              Alert.alert(copy.reanalyzeTitle, copy.reanalyzeBody, [
+                { text: copy.signOutCancel, style: "cancel" },
+                { text: copy.continue, onPress: () => navigation.navigate("Onboarding") },
+              ])
             }
           >
             <Text style={styles.actionIcon}>🔄</Text>
